@@ -1,4 +1,4 @@
-// build.zig for zig-0.15.0-dev.383 version
+// build.zig for zig-0.15.0-dev.1552 version
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
@@ -133,30 +133,33 @@ pub fn build(b: *std.Build) void {
 
         // everything that isn't windows or mac is linux :P
         else => {
-            var sources = std.BoundedArray([]const u8, 64).init(0) catch unreachable;
-            var flags = std.BoundedArray([]const u8, 16).init(0) catch unreachable;
-
-            sources.appendSlice(&base_sources) catch unreachable;
-            sources.appendSlice(&linux_sources) catch unreachable;
+            var sources = std.ArrayList([]const u8).initCapacity(b.allocator, 0) catch unreachable;
+            var flags = std.ArrayList([]const u8).initCapacity(b.allocator, 0) catch unreachable;
+            defer {
+                sources.deinit(b.allocator);
+                flags.deinit(b.allocator);
+            }
+            sources.appendSliceAssumeCapacity(&base_sources);
+            sources.appendSliceAssumeCapacity(&linux_sources);
 
             if (use_x11) {
-                sources.appendSlice(&linux_x11_sources) catch unreachable;
-                flags.append("-D_GLFW_X11") catch unreachable;
+                sources.appendSliceAssumeCapacity(&linux_x11_sources);
+                flags.appendAssumeCapacity("-D_GLFW_X11");
             }
 
             if (use_wl) {
                 lib.root_module.addCMacro("WL_MARSHAL_FLAG_DESTROY", "1");
 
-                sources.appendSlice(&linux_wl_sources) catch unreachable;
-                flags.append("-D_GLFW_WAYLAND") catch unreachable;
-                flags.append("-Wno-implicit-function-declaration") catch unreachable;
+                sources.appendSliceAssumeCapacity(&linux_wl_sources);
+                flags.appendAssumeCapacity("-D_GLFW_WAYLAND");
+                flags.appendAssumeCapacity("-Wno-implicit-function-declaration");
             }
 
-            flags.append(include_src_flag) catch unreachable;
+            flags.appendAssumeCapacity(include_src_flag);
 
             lib.addCSourceFiles(.{
-                .files = sources.slice(),
-                .flags = flags.slice(),
+                .files = sources.items,
+                .flags = flags.items,
             });
         },
     }
