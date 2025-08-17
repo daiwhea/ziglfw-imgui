@@ -1,14 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const config = @import("zga-config");
 
-// const gui_app = @import("app/main.zig");
 const c = @import("c.zig").c;
-
-// const pages = @import("app/pages/main.zig");
-// const stockserver = @import("stockserver/main.zig");
-
-const APP_ID = "ziglfw";
 
 // var show_another_window = false;
 const clear_color = c.ImVec4{ .x = 0.45, .y = 0.55, .z = 0.60, .w = 1.00 };
