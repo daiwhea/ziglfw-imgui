@@ -133,37 +133,34 @@ pub fn build(b: *std.Build) void {
 
         // everything that isn't windows or mac is linux :P
         else => {
-            _ = use_x11;
-            _ = use_wl;
-            std.debug.print("linux not supported\n", .{});
-            // var sources = std.ArrayList([]const u8).initCapacity(b.allocator, 60) catch unreachable;
-            // var flags = std.ArrayList([]const u8).initCapacity(b.allocator, 60) catch unreachable;
-            // defer {
-            //     sources.deinit(b.allocator);
-            //     flags.deinit(b.allocator);
-            // }
-            // sources.appendSliceAssumeCapacity(&base_sources);
-            // sources.appendSliceAssumeCapacity(&linux_sources);
+            var sources = std.ArrayList([]const u8).initCapacity(b.allocator, 60) catch unreachable;
+            var flags = std.ArrayList([]const u8).initCapacity(b.allocator, 60) catch unreachable;
+            defer {
+                sources.deinit(b.allocator);
+                flags.deinit(b.allocator);
+            }
+            sources.appendSliceAssumeCapacity(&base_sources);
+            sources.appendSliceAssumeCapacity(&linux_sources);
 
-            // if (use_x11) {
-            //     sources.appendSliceAssumeCapacity(&linux_x11_sources);
-            //     flags.appendAssumeCapacity("-D_GLFW_X11");
-            // }
+            if (use_x11) {
+                sources.appendSliceAssumeCapacity(&linux_x11_sources);
+                flags.appendAssumeCapacity("-D_GLFW_X11");
+            }
 
-            // if (use_wl) {
-            //     lib.root_module.addCMacro("WL_MARSHAL_FLAG_DESTROY", "1");
+            if (use_wl) {
+                lib.root_module.addCMacro("WL_MARSHAL_FLAG_DESTROY", "1");
 
-            //     sources.appendSliceAssumeCapacity(&linux_wl_sources);
-            //     flags.appendAssumeCapacity("-D_GLFW_WAYLAND");
-            //     flags.appendAssumeCapacity("-Wno-implicit-function-declaration");
-            // }
+                sources.appendSliceAssumeCapacity(&linux_wl_sources);
+                flags.appendAssumeCapacity("-D_GLFW_WAYLAND");
+                flags.appendAssumeCapacity("-Wno-implicit-function-declaration");
+            }
 
-            // flags.appendAssumeCapacity(include_src_flag);
+            flags.appendAssumeCapacity(include_src_flag);
 
-            // lib.addCSourceFiles(.{
-            //     .files = sources.items,
-            //     .flags = flags.items,
-            // });
+            lib.addCSourceFiles(.{
+                .files = sources.items,
+                .flags = flags.items,
+            });
         },
     }
     b.installArtifact(lib);
